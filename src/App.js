@@ -3,7 +3,7 @@ import FinantialData from "./FinantialData";
 
 function App() {
   return (
-    <div>
+    <div className="container">
       <FinantialData />
     </div>
   );

@@ -1,52 +1,57 @@
 import axios from "axios";
 import React, { Component } from "react";
-import { Chart } from "chart.js";
+import Chart from "chart.js/auto";
 
 export default class FinantialData extends Component {
   state = {
     data: null,
+    dates: [],
+    values: [],
+    filter: {
+      startDate: "",
+      endDate: "",
+    },
+  };
+
+  handleChange = (event) => {
+    const filtered = { ...this.state };
+    filtered.filter = {
+      ...filtered.filter,
+      [event.target.name]: event.target.value,
+    };
   };
 
   componentDidMount = async () => {
     try {
       const response = await axios.get(
-        "http://api.coindesk.com/v1/bpi/historical/close.json"
+        "https://api.coindesk.com/v1/bpi/historical/close.json"
       );
-      this.setState({ data: { ...response.data.bpi } });
-      console.log(this.state.data);
+      this.setState({
+        data: {
+          ...response.data.bpi,
+        },
+        dates: Object.keys(response.data.bpi),
+        values: Object.values(response.data.bpi),
+      });
       this.renderChart();
     } catch (err) {
-      console.log(err);
+      console.error(err);
     }
   };
 
   renderChart = () => {
     let ctx = document.getElementById("myChart").getContext("2d");
-    let myChart = new Chart(ctx, {
-      type: "bar",
+    new Chart(ctx, {
+      type: "line",
       data: {
-        labels: ["Red", "Blue", "Yellow", "Green", "Purple", "Orange"],
+        labels: this.state.dates,
         datasets: [
           {
-            label: "# of Votes",
-            data: [12, 19, 3, 5, 2, 3],
-            backgroundColor: [
-              "rgba(255, 99, 132, 0.2)",
-              "rgba(54, 162, 235, 0.2)",
-              "rgba(255, 206, 86, 0.2)",
-              "rgba(75, 192, 192, 0.2)",
-              "rgba(153, 102, 255, 0.2)",
-              "rgba(255, 159, 64, 0.2)",
-            ],
-            borderColor: [
-              "rgba(255, 99, 132, 1)",
-              "rgba(54, 162, 235, 1)",
-              "rgba(255, 206, 86, 1)",
-              "rgba(75, 192, 192, 1)",
-              "rgba(153, 102, 255, 1)",
-              "rgba(255, 159, 64, 1)",
-            ],
-            borderWidth: 1,
+            label: "Bitcoin Prices",
+            data: this.state.values,
+            backgroundColor: "#2ecc71",
+            borderColor: "#27ae60",
+            borderWidth: 3,
           },
         ],
       },
@@ -63,7 +68,26 @@ export default class FinantialData extends Component {
   render() {
     return (
       <div>
-        <canvas id="myChart" width="400" height="400"></canvas>
+        <div className="form-group">
+          <label>Starting date</label>
+          <input
+            type="date"
+            className="form-control"
+            name="startDate"
+            onChange={this.handleChange}
+          />
+        </div>
+
+        <div className="form-group">
+          <label>Ending date</label>
+          <input
+            type="date"
+            className="form-control"
+            name="endDate"
+            onChange={this.handleChange}
+          />
+        </div>
+        <canvas id="myChart" width="200"></canvas>
       </div>
     );
   }
